@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class MenuAccess extends Model
 {
+    protected $guarded = [];
+
     public function menu()
     {
         return $this->belongsTo(Menu::class, 'menu_id');

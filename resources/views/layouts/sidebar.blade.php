@@ -144,14 +144,29 @@
                 @endphp
 
                 @foreach ($parents as $parent)
-                    {{-- LEVEL 1 --}}
-                    <li class="nav-small-cap">
-                        <i class="ti ti-dots nav-small-cap-icon fs-4"></i>
-                        <span class="hide-menu">{{ $parent->name }}</span>
-                    </li>
+                    @php
+                        $parentSubmenus = $menus->where('parent_id', $parent->id);
+                    @endphp
+
+                    @if ($parent->url && $parentSubmenus->isEmpty())
+                        <li class="sidebar-item">
+                            <a href="{{ url($parent->url) }}" class="sidebar-link">
+                                <span class="d-flex">
+                                    <i class="{{ $parent->icon ?: 'ti ti-circle' }}"></i>
+                                </span>
+                                <span class="hide-menu">{{ $parent->name }}</span>
+                            </a>
+                        </li>
+                    @else
+                        {{-- LEVEL 1 --}}
+                        <li class="nav-small-cap">
+                            <i class="ti ti-dots nav-small-cap-icon fs-4"></i>
+                            <span class="hide-menu">{{ $parent->name }}</span>
+                        </li>
+                    @endif
 
                     {{-- LEVEL 2 --}}
-                    @foreach ($menus->where('parent_id', $parent->id) as $submenu)
+                    @foreach ($parentSubmenus as $submenu)
                         {{-- Ambil Level 3 berdasarkan parent_id --}}
                         @php
                             $submenus = $menus->where('parent_id', $submenu->id);
@@ -179,7 +194,7 @@
                                     @foreach ($submenus as $subsubmenu)
                                         <li class="sidebar-item">
 
-                                            <a href="{{ url($subsubmenu->url) }}" class="sidebar-link">
+                                            <a href="{{ $subsubmenu->url ? url($subsubmenu->url) : '#' }}" class="sidebar-link">
 
                                                 <span class="d-flex">
                                                     <i class="{{ $subsubmenu->icon ?? 'ti ti-circle' }}"></i>
@@ -201,7 +216,7 @@
                             {{-- LEVEL 2 TANPA ANAK --}}
                             <li class="sidebar-item">
 
-                                <a href="{{ url($submenu->url) }}" class="sidebar-link">
+                                <a href="{{ $submenu->url ? url($submenu->url) : '#' }}" class="sidebar-link">
 
                                     <span class="d-flex">
                                         <i class="{{ $submenu->icon ?? 'ti ti-circle' }}"></i>
