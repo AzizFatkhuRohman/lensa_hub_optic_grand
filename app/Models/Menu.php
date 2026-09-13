@@ -17,4 +17,9 @@ class Menu extends Model
     {
         return $this->belongsTo(self::class, 'parent_id');
     }
+
+    public static function front_table()
+    {
+        return self::orderBy('name', 'desc');
+    }
 }
