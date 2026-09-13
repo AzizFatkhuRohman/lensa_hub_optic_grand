@@ -10,4 +10,8 @@ class Menu extends Model
     {
         return $this->hasMany(MenuAccess::class, 'menu_id');
     }
+    public static function front_table()
+    {
+        return Menu::orderBy('name','desc');
+    }
 }
