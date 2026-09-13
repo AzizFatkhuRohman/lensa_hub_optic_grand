@@ -15,7 +15,9 @@ class MenuController extends Controller
     {
         $user_id = Auth::user()->id;
         $sidebar = MenuAccess::sidebar($user_id);
-        return view('menus.index');
+        return view('menus.index',[
+            'sidebar'=>$sidebar
+        ]);
     }
     public function front_table(Request $request)
     {
