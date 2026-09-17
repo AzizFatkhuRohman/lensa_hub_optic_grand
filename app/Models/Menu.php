@@ -17,9 +17,18 @@ class Menu extends Model
     {
         return $this->belongsTo(self::class, 'parent_id');
     }
-
-    public static function front_table()
+    public static function parent_show($level, $search)
     {
-        return self::orderBy('name', 'desc');
+        if ($level == 1) {
+            return collect();
+        }
+        $parentLevel = $level - 1;
+        return Menu::where('level', $parentLevel)
+            ->when($search, function ($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%');
+            })
+            ->select('id', 'name')
+            ->orderBy('name', 'asc')
+            ->get();
     }
 }

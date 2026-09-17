@@ -45,7 +45,7 @@ class DatabaseSeeder extends Seeder
         ]);
         Menu::create([
             'level' => 2,
-            'parent_id' => 2,
+            'parent_id' => 1,
             'name' => 'Menus',
             'icon' => 'ti ti-menu',
             'url' => 'settings/menus',
@@ -67,9 +67,9 @@ class DatabaseSeeder extends Seeder
         Menu::create([
             'level' => 3,
             'parent_id' => 3,
-            'name' => 'User',
+            'name' => 'Role',
             'icon' => 'ti ti-circle',
-            'url' => 'settings/users/user',
+            'url' => 'settings/users/role',
         ]);
         MenuAccess::create([
             'user_id' => 1,

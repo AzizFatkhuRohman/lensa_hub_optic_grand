@@ -47,4 +47,9 @@ class AuthController extends Controller
             ->with('login_error', 'Username atau password salah.')
             ->onlyInput('username');
     }
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        return redirect('login');
+    }
 }

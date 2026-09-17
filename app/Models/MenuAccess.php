@@ -48,4 +48,8 @@ class MenuAccess extends Model
             ->orderBy('id')
             ->get();
     }
+    public static function front_table($user_id)
+    {
+        return MenuAccess::with('menu')->where('user_id', $user_id)->latest();
+    }
 }

@@ -7,83 +7,164 @@ use App\Models\MenuAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Yajra\DataTables\DataTables;
 
 class MenuController extends Controller
 {
-    public function index(): View
+    public function index()
     {
-        $menus = Menu::query()
-            ->orderBy('level')
-            ->orderBy('parent_id')
-            ->orderBy('name')
-            ->get();
-
+        $user_id = Auth::user()->id;
+        $sidebar = MenuAccess::sidebar($user_id);
         return view('settings.menus.index', [
-            'menus' => $menus,
-            'parentMenus' => $menus->whereIn('level', [1, 2]),
-            'sidebar' => MenuAccess::sidebar(Auth::id()),
+            'sidebar' => $sidebar
         ]);
     }
-
-    public function store(Request $request): RedirectResponse
+    public function front_table(Request $request)
     {
-        $validated = $request->validate([
-            'level' => ['required', 'integer', 'in:1,2,3'],
-            'parent_id' => ['nullable', 'integer', 'exists:menus,id'],
-            'name' => ['required', 'string', 'max:255'],
-            'icon' => ['nullable', 'string', 'max:255'],
-            'url' => ['nullable', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        if ((int) $validated['level'] === 1) {
-            $validated['parent_id'] = null;
+        if ($request->ajax()) {
+            $data = Menu::orderBy('parent_id', 'asc');
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('parent_name', function ($row) {
+                    return Menu::where('id', $row->parent_id)
+                        ->value('name') ?? '-';
+                })
+                ->addColumn('icon', function ($row) {
+                    return '<i class="' . $row->icon . '"></i>';
+                })
+                ->addColumn('action', function ($row) {
+                    return '
+            <button class="btn btn-sm btn-primary" onclick="editMenu(' . $row->id . ')"><i class="ti ti-edit"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="deleteMenu(' . $row->id . ')"><i class="ti ti-trash"></i></button>
+        ';
+                })
+                ->rawColumns(['parent_name', 'icon', 'action'])
+                ->make(true);
         }
-
-        $menu = Menu::create($validated);
-
-        MenuAccess::firstOrCreate([
-            'user_id' => Auth::id(),
-            'menu_id' => $menu->id,
-        ]);
-
-        return to_route('settings.menus.index')
-            ->with('success', 'Menu berhasil ditambahkan.');
     }
-
-    public function update(Request $request, Menu $menu): RedirectResponse
+    public function show(Request $request)
     {
-        $validated = $request->validate([
-            'level' => ['required', 'integer', 'in:1,2,3'],
-            'parent_id' => ['nullable', 'integer', 'exists:menus,id', 'not_in:' . $menu->id],
-            'name' => ['required', 'string', 'max:255'],
-            'icon' => ['nullable', 'string', 'max:255'],
-            'url' => ['nullable', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        if ((int) $validated['level'] === 1) {
-            $validated['parent_id'] = null;
+        try {
+            $id = $request->id;
+            $data = Menu::find($id);
+            if (!$data) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Menu tidak ditemukan'
+                ]);
+            }
+            return response()->json([
+                'status' => true,
+                'data' => $data
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ]);
         }
-
-        $menu->update($validated);
-
-        return to_route('settings.menus.index')
-            ->with('success', 'Menu berhasil diperbarui.');
     }
-
-    public function destroy(Menu $menu): RedirectResponse
+    public function store(Request $request)
     {
-        if (Menu::where('parent_id', $menu->id)->exists()) {
-            return to_route('settings.menus.index')
-                ->with('error', 'Menu tidak dapat dihapus karena masih memiliki submenu.');
+        try {
+            $validation = Validator::make($request->all(), [
+                'level' => 'required',
+                'parent_id' => 'nullable',
+                'name' => 'required:max:100|unique:menus,name',
+                'icon' => 'nullable',
+                'url' => 'nullable|max:100',
+                'description' => 'nullable|max:255'
+            ]);
+            if ($validation->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => $validation->messages()
+                ]);
+            }
+            Menu::create($validation->validated());
+            return response()->json([
+                'status' => true,
+                'message' => 'Menu berhasil dibuat'
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ]);
         }
-
-        MenuAccess::where('menu_id', $menu->id)->delete();
-        $menu->delete();
-
-        return to_route('settings.menus.index')
-            ->with('success', 'Menu berhasil dihapus.');
+    }
+    public function update(Request $request)
+    {
+        try {
+            $id = $request->id;
+            $validation = Validator::make($request->all(), [
+                'level' => 'required',
+                'parent_id' => 'nullable',
+                'name' => [
+                    'required',
+                    'max:100',
+                    Rule::unique('menus', 'name')->ignore($id),
+                ],
+                'icon' => 'nullable',
+                'url' => 'nullable|max:100',
+                'description' => 'nullable|max:255'
+            ]);
+            if ($validation->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => $validation->messages()
+                ]);
+            }
+            $data = Menu::find($id);
+            if (!$data) {
+                return response()->json([
+                    'status' => false,
+                    'mesasge' => 'Menu tidak ditemukan'
+                ]);
+            }
+            $data->update($validation->validated());
+            return response()->json([
+                'status' => true,
+                'message' => 'Menu berhasil diubah'
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ]);
+        }
+    }
+    public function delete(Request $request)
+    {
+        try {
+            $id = $request->id;
+            $data = Menu::find($id);
+            if (!$data) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Menu tidak ditemukan'
+                ]);
+            }
+            $data->delete();
+            return response()->json([
+                'status' => true,
+                'message' => 'Menu berhasil dihapus'
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ]);
+        }
+    }
+    public function parent_id(Request $request)
+    {
+        $search = $request->input('search');
+        $level  = $request->input('level');
+        $data = Menu::parent_show($level, $search);
+        return response()->json($data);
     }
 }
