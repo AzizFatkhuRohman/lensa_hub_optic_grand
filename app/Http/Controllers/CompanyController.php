@@ -7,6 +7,7 @@ use App\Models\MenuAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\DataTables;
 
 class CompanyController extends Controller
@@ -15,7 +16,7 @@ class CompanyController extends Controller
     {
         $user_id = Auth::user()->id;
         $sidebar = MenuAccess::sidebar($user_id);
-        return view('company.index', [
+        return view('settings.company.index', [
             'sidebar' => $sidebar
         ]);
     }
@@ -27,8 +28,7 @@ class CompanyController extends Controller
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
                     return '
-            <button class="btn btn-sm btn-primary">Edit</button>
-            <button class="btn btn-sm btn-danger">Delete</button>
+            <button class="btn btn-sm btn-primary" onclick="editCompany(' . $row->id . ')"><i class="ti ti-edit"></i></button>
         ';
                 })
                 ->rawColumns(['action'])
@@ -70,7 +70,7 @@ class CompanyController extends Controller
                     'message' => $validation->messages()
                 ]);
             }
-            Company::create($validation);
+            Company::create($validation->validate());
             return response()->json([
                 'status' => true,
                 'message' => 'Company berhasil dibuat'
@@ -87,7 +87,11 @@ class CompanyController extends Controller
         try {
             $id = $request->id;
             $validation = Validator::make($request->all(), [
-                'company_name' => 'required|max:100|unique:companies,company_name',
+                'company_name' => [
+                    'required',
+                    'max:100',
+                    Rule::unique('companies', 'company_name')->ignore($id),
+                ],
                 'address' => 'required|max:255'
             ]);
             if ($validation->fails()) {
@@ -103,10 +107,10 @@ class CompanyController extends Controller
                     'mesasge' => 'Company tidak ditemukan'
                 ]);
             }
-            $data->update($validation);
+            Company::find($id)->update($validation->validate());
             return response()->json([
                 'status' => true,
-                'message' => 'Company berhasil ditambahkan'
+                'message' => 'Company berhasil diubah'
             ]);
         } catch (\Throwable $th) {
             return response()->json([

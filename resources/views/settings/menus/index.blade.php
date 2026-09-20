@@ -85,6 +85,7 @@
                                 <option value="ti ti-package" @selected(old('icon') == 'ti ti-package')>Product</option>
                                 <option value="ti ti-file" @selected(old('icon') == 'ti ti-file')>File</option>
                                 <option value="ti ti-report" @selected(old('icon') == 'ti ti-report')>Report</option>
+                                <option value="ti ti-truck" @selected(old('icon') == 'ti ti-report')>Truck</option>
                             </select>
                         </div>
                         <div class="mb-3 d-none" id="d_url">

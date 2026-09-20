@@ -1,15 +1,17 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('login', [AuthController::class, 'index']);
 Route::post('login', [AuthController::class, 'login'])->name('login');
-Route::post('logout',[AuthController::class,'logout']);
+Route::post('logout', [AuthController::class, 'logout']);
 Route::middleware('auth')->group(function () {
     Route::get('/', [IndexController::class, 'index']);
     Route::prefix('settings')->group(function () {
@@ -28,11 +30,11 @@ Route::middleware('auth')->group(function () {
                 Route::get('front_table', [UserController::class, 'front_table']);
                 Route::post('store', [UserController::class, 'store']);
                 Route::post('role_id', [UserController::class, 'role_id']);
-                Route::post('company_id',[UserController::class,'company_id']);
-                Route::post('menu_list',[UserController::class,'menu_list']);
-                Route::post('store_menu_access',[UserController::class,'store_menu_access']);
-                Route::post('menu_access',[UserController::class,'menu_access']);
-                Route::post('delete_menu_access',[UserController::class,'delete_menu_access']);
+                Route::post('company_id', [UserController::class, 'company_id']);
+                Route::post('menu_list', [UserController::class, 'menu_list']);
+                Route::post('store_menu_access', [UserController::class, 'store_menu_access']);
+                Route::post('menu_access', [UserController::class, 'menu_access']);
+                Route::post('delete_menu_access', [UserController::class, 'delete_menu_access']);
                 Route::post('show', [UserController::class, 'show']);
                 Route::post('update', [UserController::class, 'update']);
                 Route::post('delete', [UserController::class, 'delete']);
@@ -45,6 +47,19 @@ Route::middleware('auth')->group(function () {
                 Route::post('update', [RoleController::class, 'update']);
                 Route::post('delete', [RoleController::class, 'delete']);
             });
+        });
+        Route::prefix('company')->group(function () {
+            Route::get('/', [CompanyController::class, 'index']);
+            Route::get('front_table', [CompanyController::class, 'front_table']);
+            Route::post('store', [CompanyController::class, 'store']);
+            Route::post('update',[CompanyController::class,'update']);
+            Route::post('show',[CompanyController::class,'show']);
+        });
+    });
+    Route::prefix('masters')->group(function(){
+        Route::prefix('suppliers')->group(function(){
+            Route::get('/',[SupplierController::class,'index']);
+            Route::get('front_table',[SupplierController::class,'front_table']);
         });
     });
 });
