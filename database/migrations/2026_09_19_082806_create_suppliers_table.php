@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('postal_code')->nullable();
             $table->enum('is_active', [1, 0])->default(1);
             $table->bigInteger('created_by');
-            $table->bigInteger('updated_by');
+            $table->bigInteger('updated_by')->nullable();
             $table->timestamps();
         });
     }

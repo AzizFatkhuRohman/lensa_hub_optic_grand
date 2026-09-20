@@ -13,7 +13,7 @@
                         <div
                             class="d-flex align-items-center justify-content-between justify-content-sm-end gap-3 flex-shrink-0">
                             <button type="button" class="btn btn-primary d-flex align-items-center gap-2"
-                                data-bs-toggle="modal" data-bs-target="#addMenuModal" id="btnTambahSupplier">
+                                data-bs-toggle="modal" data-bs-target="#addSupplierModal" id="btnTambahSupplier">
                                 <i class="ti ti-plus"></i>
                                 <span>Tambah</span>
                             </button>
@@ -40,11 +40,12 @@
             </div>
         </div>
 
-        <div class="modal fade" id="addMenuModal" tabindex="-1" aria-labelledby="addMenuModalLabel" aria-hidden="true">
+        <div class="modal fade" id="addSupplierModal" tabindex="-1" aria-labelledby="addSupplierModalLabel"
+            aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title fw-semibold" id="addMenuModalLabel">Tambah supplier</h5>
+                        <h5 class="modal-title fw-semibold" id="addSupplierModalLabel">Tambah supplier</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                     </div>
                     <div class="modal-body">
@@ -132,7 +133,7 @@
             placeholder: 'Pilih Company',
             allowClear: true,
             width: '100%',
-            dropdownParent: $('#addMenuModal'),
+            dropdownParent: $('#addSupplierModal'),
 
             ajax: {
                 url: "{{ url('settings/users/user/company_id') }}",
@@ -219,6 +220,7 @@
 
             let data = {
                 '_token': "{{ csrf_token() }}",
+                'company_id': $("#company_id").val(),
                 'code': $("#code").val(),
                 'name': $("#name").val(),
                 'npwp': $("#npwp").val(),
@@ -237,8 +239,8 @@
             }
 
             const url = id ?
-                "{{ url('settings/supplier/update') }}" :
-                "{{ url('settings/supplier/store') }}";
+                "{{ url('masters/suppliers/update') }}" :
+                "{{ url('masters/suppliers/store') }}";
 
             $.ajax({
                 url: url,
@@ -271,14 +273,20 @@
 
                     } else {
 
-                        Swal.fire({
-                            toast: true,
-                            position: 'top-end',
-                            icon: 'error',
-                            title: res.message || 'Gagal menyimpan supplier',
-                            showConfirmButton: false,
-                            timer: 3000,
-                            timerProgressBar: true
+                        $('.is-invalid').removeClass('is-invalid');
+                        $('.invalid-feedback').remove();
+
+                        // Tampilkan error validasi
+                        $.each(res.message, function(field, errors) {
+                            let input = $('#' + field);
+
+                            input.addClass('is-invalid');
+
+                            input.after(
+                                '<div class="invalid-feedback">' +
+                                errors[0] +
+                                '</div>'
+                            );
                         });
                     }
                 },
@@ -310,7 +318,7 @@
         function editSupplier(id) {
 
             $.ajax({
-                url: "{{ url('settings/supplier/show') }}",
+                url: "{{ url('masters/suppliers/show') }}",
                 type: "POST",
                 data: {
                     _token: "{{ csrf_token() }}",
@@ -324,6 +332,18 @@
                         const data = res.data;
 
                         $("#id").val(data.id);
+                        if (data.company) {
+                            const companyOption = new Option(
+                                data.company.company_name,
+                                data.company.id,
+                                true,
+                                true
+                            );
+
+                            $("#company_id")
+                                .append(companyOption)
+                                .trigger("change");
+                        }
                         $("#code").val(data.code);
                         $("#name").val(data.name);
                         $("#npwp").val(data.npwp);
@@ -374,6 +394,55 @@
                         timer: 3000
                     });
                 }
+            });
+        }
+
+        function deleteSupplier(id) {
+            Swal.fire({
+                title: 'Hapus supplier?',
+                text: 'Data supplier yang dihapus tidak dapat dikembalikan.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, hapus',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#dc3545',
+            }).then((result) => {
+                if (!result.isConfirmed) {
+                    return;
+                }
+
+                $.ajax({
+                    url: "{{ url('masters/suppliers/delete') }}",
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        id: id
+                    },
+                    success: function(res) {
+                        if (res.status) {
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'success',
+                                title: res.message,
+                                showConfirmButton: false,
+                                timer: 3000,
+                            });
+
+                            $('#frontTable').DataTable().ajax.reload(null, false);
+                            return;
+                        }
+
+                        Swal.fire('Gagal', res.message || 'Supplier tidak ditemukan.', 'error');
+                    },
+                    error: function(xhr) {
+                        Swal.fire(
+                            'Gagal',
+                            xhr.responseJSON?.message || 'Terjadi kesalahan pada server.',
+                            'error'
+                        );
+                    }
+                });
             });
         }
     </script>

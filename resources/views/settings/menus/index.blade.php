@@ -12,7 +12,6 @@
                         </div>
                         <div
                             class="d-flex align-items-center justify-content-between justify-content-sm-end gap-3 flex-shrink-0">
-                            <span class="badge bg-light-primary text-primary">menu</span>
                             <button type="button" class="btn btn-primary d-flex align-items-center gap-2"
                                 data-bs-toggle="modal" data-bs-target="#addMenuModal">
                                 <i class="ti ti-plus"></i>
@@ -444,7 +443,7 @@
                                 Swal.fire({
                                     toast: true,
                                     position: 'top-end',
-                                    icon: 'error',
+                                    icon: 'success',
                                     title: res.message,
                                     showConfirmButton: false,
                                     timer: 3000,

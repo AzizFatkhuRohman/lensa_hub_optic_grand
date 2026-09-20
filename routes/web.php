@@ -52,14 +52,18 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [CompanyController::class, 'index']);
             Route::get('front_table', [CompanyController::class, 'front_table']);
             Route::post('store', [CompanyController::class, 'store']);
-            Route::post('update',[CompanyController::class,'update']);
-            Route::post('show',[CompanyController::class,'show']);
+            Route::post('update', [CompanyController::class, 'update']);
+            Route::post('show', [CompanyController::class, 'show']);
         });
     });
-    Route::prefix('masters')->group(function(){
-        Route::prefix('suppliers')->group(function(){
-            Route::get('/',[SupplierController::class,'index']);
-            Route::get('front_table',[SupplierController::class,'front_table']);
+    Route::prefix('masters')->group(function () {
+        Route::prefix('suppliers')->group(function () {
+            Route::get('/', [SupplierController::class, 'index']);
+            Route::get('front_table', [SupplierController::class, 'front_table']);
+            Route::post('store', [SupplierController::class, 'store']);
+            Route::post('show', [SupplierController::class, 'show']);
+            Route::post('update', [SupplierController::class, 'update']);
+            Route::post('delete', [SupplierController::class, 'delete']);
         });
     });
 });
