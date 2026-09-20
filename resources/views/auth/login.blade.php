@@ -5,9 +5,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ env('APP_NAME') }}</title>
-    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/images/logos/favicon.png') }}" />
+    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/images/logos/logo.png') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/styles.min.css') }}" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://www.google.com/recaptcha/api.js?render={{ env('RECAPTCHA_SITE_KEY') }}"></script>
 </head>
 
 <body>
@@ -22,12 +23,14 @@
                         <div class="card mb-0">
                             <div class="card-body">
                                 <a href="{{ url('/') }}"
-                                    class="text-nowrap logo-img text-center d-block py-3 w-100">
-                                    <img src="{{ asset('assets/images/logos/logo.svg') }}" alt="">
+                                    class="text-nowrap logo-img text-center d-block py-2 w-100">
+                                    <img src="{{ asset('assets/images/logos/logo.png') }}" alt="logo" width="70"
+                                        height="70">
                                 </a>
-                                <p class="text-center">Your Social Campaigns</p>
-                                <form action="{{ route('login') }}" method="post">
+                                <p class="text-center">Solusi Mata Indah & Sehat</p>
+                                <form action="{{ route('login') }}" method="post" id="loginForm">
                                     @csrf
+                                    <input type="hidden" name="recaptcha_token" id="recaptcha_token">
                                     <div class="mb-3">
                                         <label for="exampleInputEmail1" class="form-label">Username</label>
                                         <input type="text" class="form-control" id="exampleInputEmail1"
@@ -46,14 +49,9 @@
                                                 Remeber this Device
                                             </label>
                                         </div>
-                                        {{-- <a class="text-primary fw-bold" href="{{ url('/') }}">Forgot Password ?</a> --}}
                                     </div>
                                     <button class="btn btn-primary w-100 py-8 fs-4 mb-4 rounded-2" type="submit">Sign
                                         In</button>
-                                    {{-- <div class="d-flex align-items-center justify-content-center">
-                    <p class="fs-4 mb-0 fw-bold">New to Modernize?</p>
-                    <a class="text-primary fw-bold ms-2" href="{{ url('authentication-register') }}">Create an account</a>
-                  </div> --}}
                                 </form>
                             </div>
                         </div>
@@ -66,6 +64,42 @@
     <script src="{{ asset('assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
     <!-- solar icons -->
     <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const form = this;
+            const button = form.querySelector('button[type="submit"]');
+
+            button.disabled = true;
+            button.innerHTML = 'Memproses...';
+
+            grecaptcha.ready(function() {
+                grecaptcha.execute('{{ env('RECAPTCHA_SITE_KEY') }}', {
+                    action: 'login'
+                }).then(function(token) {
+
+                    document.getElementById('recaptcha_token').value = token;
+
+                    form.submit();
+                }).catch(function() {
+
+                    button.disabled = false;
+                    button.innerHTML = 'Sign In';
+
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'error',
+                        title: 'Gagal memverifikasi keamanan. Silakan coba lagi.',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                    });
+                });
+            });
+        });
+    </script>
     @if ($errors->any())
         <script>
             Swal.fire({

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RoleController;
@@ -64,6 +65,14 @@ Route::middleware('auth')->group(function () {
             Route::post('show', [SupplierController::class, 'show']);
             Route::post('update', [SupplierController::class, 'update']);
             Route::post('delete', [SupplierController::class, 'delete']);
+        });
+        Route::prefix('customers')->group(function () {
+            Route::get('/', [CustomerController::class, 'index']);
+            Route::get('front_table', [CustomerController::class, 'front_table']);
+            Route::post('store', [CustomerController::class, 'store']);
+            Route::post('show', [CustomerController::class, 'show']);
+            Route::post('update', [CustomerController::class, 'update']);
+            Route::post('delete', [CustomerController::class, 'delete']);
         });
     });
 });

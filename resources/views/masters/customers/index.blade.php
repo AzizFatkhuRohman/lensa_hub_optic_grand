@@ -7,13 +7,13 @@
                 <div class="card-body">
                     <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 mb-4">
                         <div class="min-w-0">
-                            <h5 class="card-title fw-semibold mb-1">Daftar Supplier</h5>
-                            <p class="card-subtitle mb-0">Kelola data pemasok</p>
+                            <h5 class="card-title fw-semibold mb-1">Daftar Customer</h5>
+                            <p class="card-subtitle mb-0">Kelola data customer</p>
                         </div>
                         <div
                             class="d-flex align-items-center justify-content-between justify-content-sm-end gap-3 flex-shrink-0">
                             <button type="button" class="btn btn-primary d-flex align-items-center gap-2"
-                                data-bs-toggle="modal" data-bs-target="#addSupplierModal" id="btnTambahSupplier">
+                                data-bs-toggle="modal" data-bs-target="#addCustomerModal" id="btnTambahCustomer">
                                 <i class="ti ti-plus"></i>
                                 <span>Tambah</span>
                             </button>
@@ -40,12 +40,12 @@
             </div>
         </div>
 
-        <div class="modal fade" id="addSupplierModal" tabindex="-1" aria-labelledby="addSupplierModalLabel"
+        <div class="modal fade" id="addCustomerModal" tabindex="-1" aria-labelledby="addCustomerModalLabel"
             aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title fw-semibold" id="addSupplierModalLabel">Tambah supplier</h5>
+                        <h5 class="modal-title fw-semibold" id="addCustomerModalLabel">Tambah customer</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                     </div>
                     <div class="modal-body">
@@ -57,19 +57,32 @@
                                 </select>
                             </div>
                             <div class="mb-3 col-md-6">
-                                <label for="name" class="form-label">Kode Supplier</label>
+                                <label for="name" class="form-label">Tipe Customer</label>
+                                <select class="form-select" id="customer_type" name="customer_type">
+                                    <option value="Individu" selected>Individu</option>
+                                    <option value="Perusahaan">Perusahaan</option>
+                                    <option value="Asuransi">Asuransi</option>
+                                </select>
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                <label for="name" class="form-label">Kode Customer</label>
                                 <input type="text" class="form-control" id="code" name="code"
                                     value="{{ old('code') }}">
                             </div>
                             <div class="mb-3 col-md-6">
-                                <label for="name" class="form-label">Nama Supplier</label>
+                                <label for="name" class="form-label">Nama Customer</label>
                                 <input type="text" class="form-control" id="name" name="name"
                                     value="{{ old('name') }}">
                             </div>
                             <div class="mb-3 col-md-6">
-                                <label for="name" class="form-label">NPWP</label>
-                                <input type="text" class="form-control" id="npwp" name="npwp"
-                                    value="{{ old('npwp') }}">
+                                <label for="name" class="form-label">Tanggal lahir</label>
+                                <input type="text" class="form-control" id="brith_date" name="brith_date"
+                                    value="{{ old('brith_date') }}">
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                <label for="name" class="form-label">NIK</label>
+                                <input type="text" class="form-control" id="nik" name="nik"
+                                    value="{{ old('nik') }}">
                             </div>
                             <div class="mb-3 col-md-6">
                                 <label for="name" class="form-label">No Telp</label>
@@ -132,7 +145,7 @@
             placeholder: 'Pilih Company',
             allowClear: true,
             width: '100%',
-            dropdownParent: $('#addSupplierModal'),
+            dropdownParent: $('#addCustomerModal'),
 
             ajax: {
                 url: "{{ url('settings/users/user/company_id') }}",
@@ -170,7 +183,7 @@
             $("#frontTable").DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: "{{ url('masters/suppliers/front_table') }}",
+                ajax: "{{ url('masters/customers/front_table') }}",
                 columns: [{
                     data: 'DT_RowIndex',
                     name: 'DT_RowIndex',
@@ -180,11 +193,14 @@
                     data: 'company_name',
                     name: 'company_name'
                 }, {
+                    data: 'customer_type',
+                    name: 'customer_type'
+                }, {
                     data: 'name',
                     name: 'name'
                 }, {
-                    data: 'npwp',
-                    name: 'npwp'
+                    data: 'nik',
+                    name: 'nik'
                 }, {
                     data: 'status',
                     name: 'status'
@@ -196,12 +212,13 @@
                 }]
             })
         }
-        $("#btnTambahSupplier").on('click', function() {
+        $("#btnTambahCustomer").on('click', function() {
 
             $("#id").val('');
+            $('#customer_type').val('')
             $("#code").val('');
             $("#name").val('');
-            $("#npwp").val('');
+            $("#nik").val('');
             $("#phone").val('');
             $("#email").val('');
             $("#country").val('');
@@ -211,7 +228,7 @@
             $("#postal_code").val('');
             $("#is_active").val('1');
 
-            $("#addSupplierModalLabel").text('Tambah Supplier');
+            $("#addCustomerModalLabel").text('Tambah Customer');
         });
         $("#simpan").on('click', function() {
 
@@ -219,6 +236,7 @@
 
             let data = {
                 '_token': "{{ csrf_token() }}",
+                'customer_type': $("#customer_type").val(),
                 'company_id': $("#company_id").val(),
                 'code': $("#code").val(),
                 'name': $("#name").val(),
@@ -238,8 +256,8 @@
             }
 
             const url = id ?
-                "{{ url('masters/suppliers/update') }}" :
-                "{{ url('masters/suppliers/store') }}";
+                "{{ url('masters/customers/update') }}" :
+                "{{ url('masters/customers/store') }}";
 
             $.ajax({
                 url: url,
@@ -263,7 +281,7 @@
                         $('#frontTable').DataTable().ajax.reload(null, false);
 
                         const modal = bootstrap.Modal.getInstance(
-                            document.getElementById('addSupplierModal')
+                            document.getElementById('addCustomerModal')
                         );
 
                         if (modal) {
@@ -274,8 +292,6 @@
 
                         $('.is-invalid').removeClass('is-invalid');
                         $('.invalid-feedback').remove();
-
-                        // Tampilkan error validasi
                         $.each(res.message, function(field, errors) {
                             let input = $('#' + field);
 
@@ -291,16 +307,12 @@
                 },
 
                 error: function(xhr) {
-
                     console.log(xhr);
                     console.log(xhr.responseText);
-
                     let message = 'Terjadi kesalahan pada server';
-
                     if (xhr.responseJSON && xhr.responseJSON.message) {
                         message = xhr.responseJSON.message;
                     }
-
                     Swal.fire({
                         toast: true,
                         position: 'top-end',
@@ -314,10 +326,9 @@
             });
         });
 
-        function editSupplier(id) {
-
+        function editcustomer(id) {
             $.ajax({
-                url: "{{ url('masters/suppliers/show') }}",
+                url: "{{ url('masters/customers/show') }}",
                 type: "POST",
                 data: {
                     _token: "{{ csrf_token() }}",
@@ -325,11 +336,8 @@
                 },
 
                 success: function(res) {
-
                     if (res.status === true) {
-
                         const data = res.data;
-
                         $("#id").val(data.id);
                         if (data.company) {
                             const companyOption = new Option(
@@ -338,14 +346,14 @@
                                 true,
                                 true
                             );
-
                             $("#company_id")
                                 .append(companyOption)
                                 .trigger("change");
                         }
+                        $("#customer_type").val(data.customer_type).trigger('change')
                         $("#code").val(data.code);
                         $("#name").val(data.name);
-                        $("#npwp").val(data.npwp);
+                        $("#nik").val(data.nik);
                         $("#phone").val(data.phone);
                         $("#email").val(data.email);
                         $("#country").val(data.country);
@@ -355,10 +363,10 @@
                         $("#postal_code").val(data.postal_code);
                         $("#is_active").val(data.is_active);
 
-                        $("#addSupplierModalLabel").text('Edit Supplier');
+                        $("#addCustomerModalLabel").text('Edit customer');
 
                         const modal = new bootstrap.Modal(
-                            document.getElementById('addSupplierModal')
+                            document.getElementById('addCustomerModal')
                         );
 
                         modal.show();
@@ -369,7 +377,7 @@
                             toast: true,
                             position: 'top-end',
                             icon: 'error',
-                            title: res.message || 'Data supplier tidak ditemukan',
+                            title: res.message || 'Data customer tidak ditemukan',
                             showConfirmButton: false,
                             timer: 3000
                         });
@@ -378,7 +386,7 @@
 
                 error: function(xhr) {
 
-                    let message = 'Gagal mengambil data supplier';
+                    let message = 'Gagal mengambil data customer';
 
                     if (xhr.responseJSON && xhr.responseJSON.message) {
                         message = xhr.responseJSON.message;
@@ -396,10 +404,10 @@
             });
         }
 
-        function deleteSupplier(id) {
+        function deletecustomer(id) {
             Swal.fire({
-                title: 'Hapus supplier?',
-                text: 'Data supplier yang dihapus tidak dapat dikembalikan.',
+                title: 'Hapus customer?',
+                text: 'Data customer yang dihapus tidak dapat dikembalikan.',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Ya, hapus',
@@ -411,7 +419,7 @@
                 }
 
                 $.ajax({
-                    url: "{{ url('masters/suppliers/delete') }}",
+                    url: "{{ url('masters/customers/delete') }}",
                     type: "POST",
                     data: {
                         _token: "{{ csrf_token() }}",
@@ -432,7 +440,7 @@
                             return;
                         }
 
-                        Swal.fire('Gagal', res.message || 'Supplier tidak ditemukan.', 'error');
+                        Swal.fire('Gagal', res.message || 'customer tidak ditemukan.', 'error');
                     },
                     error: function(xhr) {
                         Swal.fire(

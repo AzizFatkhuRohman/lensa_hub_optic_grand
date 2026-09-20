@@ -1,8 +1,9 @@
 <!--  App Topstrip -->
 <div class="app-topstrip bg-dark py-3 px-4 w-100 d-lg-flex align-items-center justify-content-between">
     <div class="d-none d-sm-flex align-items-center justify-content-center gap-9 mb-3 mb-lg-0">
-        <a class="d-flex justify-content-center" href="https://adminmart.com/" target="_blank">
-            <img src="{{ asset('assets/images/logos/logo-adminmart.svg') }}" alt="" width="150">
+        <a class="d-flex justify-content-center align-items-center text-decoration-none" href="/" target="_blank">
+            <img src="{{ asset('assets/images/logos/logo.png') }}" alt="" width="40" height="40">
+            <h6 class="text-white mb-0 ms-2">Solusi Mata Indah & Sehat</h6>
         </a>
     </div>
 
@@ -194,7 +195,8 @@
                                     @foreach ($submenus as $subsubmenu)
                                         <li class="sidebar-item">
 
-                                            <a href="{{ $subsubmenu->url ? url($subsubmenu->url) : '#' }}" class="sidebar-link">
+                                            <a href="{{ $subsubmenu->url ? url($subsubmenu->url) : '#' }}"
+                                                class="sidebar-link">
 
                                                 <span class="d-flex">
                                                     <i class="{{ $subsubmenu->icon ?? 'ti ti-circle' }}"></i>

@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('suppliers', function (Blueprint $table) {
+        Schema::create('customers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained();
+            $table->string('customer_type', 50);
             $table->string('code', 20)->unique();
             $table->string('name');
-            $table->string('npwp')->nullable();
+            $table->date('brith_date')->nullable();
+            $table->string('nik')->nullable();
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->string('country')->nullable();
@@ -36,6 +38,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('suppliers');
+        Schema::dropIfExists('customers');
     }
 };
