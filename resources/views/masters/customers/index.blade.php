@@ -26,8 +26,9 @@
                                 <tr>
                                     <th>No</th>
                                     <th>Company</th>
+                                    <th>Type</th>
                                     <th>Name</th>
-                                    <th>NPWP</th>
+                                    <th>NIK</th>
                                     <th>Status</th>
                                     <th class="text-end">Action</th>
                                 </tr>
@@ -76,7 +77,7 @@
                             </div>
                             <div class="mb-3 col-md-6">
                                 <label for="name" class="form-label">Tanggal lahir</label>
-                                <input type="text" class="form-control" id="brith_date" name="brith_date"
+                                <input type="date" class="form-control" id="brith_date" name="brith_date"
                                     value="{{ old('brith_date') }}">
                             </div>
                             <div class="mb-3 col-md-6">
@@ -215,9 +216,11 @@
         $("#btnTambahCustomer").on('click', function() {
 
             $("#id").val('');
-            $('#customer_type').val('')
+            $('#company_id').val(null).trigger('change');
+            $('#customer_type').val('Individu');
             $("#code").val('');
             $("#name").val('');
+            $("#brith_date").val('');
             $("#nik").val('');
             $("#phone").val('');
             $("#email").val('');
@@ -227,6 +230,9 @@
             $("#district").val('');
             $("#postal_code").val('');
             $("#is_active").val('1');
+
+            $('.is-invalid').removeClass('is-invalid');
+            $('.invalid-feedback').remove();
 
             $("#addCustomerModalLabel").text('Tambah Customer');
         });
@@ -240,7 +246,8 @@
                 'company_id': $("#company_id").val(),
                 'code': $("#code").val(),
                 'name': $("#name").val(),
-                'npwp': $("#npwp").val(),
+                'brith_date': $("#brith_date").val(),
+                'nik':$("#nik").val(),
                 'phone': $("#phone").val(),
                 'email': $("#email").val(),
                 'country': $("#country").val(),
@@ -326,7 +333,7 @@
             });
         });
 
-        function editcustomer(id) {
+        function editCustomer(id) {
             $.ajax({
                 url: "{{ url('masters/customers/show') }}",
                 type: "POST",
@@ -353,6 +360,7 @@
                         $("#customer_type").val(data.customer_type).trigger('change')
                         $("#code").val(data.code);
                         $("#name").val(data.name);
+                        $("#brith_date").val(data.brith_date);
                         $("#nik").val(data.nik);
                         $("#phone").val(data.phone);
                         $("#email").val(data.email);
@@ -404,13 +412,13 @@
             });
         }
 
-        function deletecustomer(id) {
+        function deleteCustomer(id) {
             Swal.fire({
-                title: 'Hapus customer?',
-                text: 'Data customer yang dihapus tidak dapat dikembalikan.',
+                title: 'Nonaktifkan customer?',
+                text: 'Customer tidak dapat digunakan sampai diaktifkan kembali.',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'Ya, hapus',
+                confirmButtonText: 'Ya, nonaktifkan',
                 cancelButtonText: 'Batal',
                 confirmButtonColor: '#dc3545',
             }).then((result) => {
