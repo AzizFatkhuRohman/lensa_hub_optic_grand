@@ -78,41 +78,43 @@ Route::middleware('auth')->group(function () {
             Route::post('update', [CustomerController::class, 'update']);
             Route::post('delete', [CustomerController::class, 'delete']);
         });
-        Route::prefix('category-products')->group(function () {
-            Route::get('/', [CategoryProductController::class, 'index']);
-            Route::get('front_table', [CategoryProductController::class, 'front_table']);
-            Route::post('store', [CategoryProductController::class, 'store']);
-            Route::post('show', [CategoryProductController::class, 'show']);
-            Route::post('update', [CategoryProductController::class, 'update']);
-            Route::post('delete', [CategoryProductController::class, 'delete']);
-        });
+        Route::prefix('products')->group(function () {
+            Route::prefix('category')->group(function () {
+                Route::get('/', [CategoryProductController::class, 'index']);
+                Route::get('front_table', [CategoryProductController::class, 'front_table']);
+                Route::post('store', [CategoryProductController::class, 'store']);
+                Route::post('show', [CategoryProductController::class, 'show']);
+                Route::post('update', [CategoryProductController::class, 'update']);
+                Route::post('delete', [CategoryProductController::class, 'delete']);
+            });
 
-        Route::prefix('product')->group(function () {
-            Route::get('/', [ProductController::class, 'index']);
-            Route::get('front_table', [ProductController::class, 'front_table']);
-            Route::post('store', [ProductController::class, 'store']);
-            Route::post('show', [ProductController::class, 'show']);
-            Route::post('update', [ProductController::class, 'update']);
-            Route::post('delete', [ProductController::class, 'delete']);
-        });
+            Route::prefix('product')->group(function () {
+                Route::get('/', [ProductController::class, 'index']);
+                Route::get('front_table', [ProductController::class, 'front_table']);
+                Route::post('store', [ProductController::class, 'store']);
+                Route::post('show', [ProductController::class, 'show']);
+                Route::post('update', [ProductController::class, 'update']);
+                Route::post('delete', [ProductController::class, 'delete']);
+            });
 
-        Route::prefix('unit')->group(function () {
-            Route::get('/', [UnitController::class, 'index']);
-            Route::get('front_table', [UnitController::class, 'frontTable']);
-            Route::get('create', [UnitController::class, 'create']);
-            Route::post('store', [UnitController::class, 'store']);
-            Route::get('edit/{unit}', [UnitController::class, 'edit']);
-            Route::put('update/{unit}', [UnitController::class, 'update']);
-            Route::delete('destroy/{unit}', [UnitController::class, 'destroy']);
-        });
+            Route::prefix('unit')->group(function () {
+                Route::get('/', [UnitController::class, 'index']);
+                Route::get('front_table', [UnitController::class, 'frontTable']);
+                Route::get('create', [UnitController::class, 'create']);
+                Route::post('store', [UnitController::class, 'store']);
+                Route::get('edit/{unit}', [UnitController::class, 'edit']);
+                Route::put('update/{unit}', [UnitController::class, 'update']);
+                Route::delete('destroy/{unit}', [UnitController::class, 'destroy']);
+            });
 
-        Route::prefix('type')->group(function () {
-            Route::get('/', [TypeController::class, 'index']);
-            Route::get('front_table', [TypeController::class, 'front_table']);
-            Route::post('store', [TypeController::class, 'store']);
-            Route::post('show', [TypeController::class, 'show']);
-            Route::post('update', [TypeController::class, 'update']);
-            Route::post('delete', [TypeController::class, 'delete']);
+            Route::prefix('type')->group(function () {
+                Route::get('/', [TypeController::class, 'index']);
+                Route::get('front_table', [TypeController::class, 'front_table']);
+                Route::post('store', [TypeController::class, 'store']);
+                Route::post('show', [TypeController::class, 'show']);
+                Route::post('update', [TypeController::class, 'update']);
+                Route::post('delete', [TypeController::class, 'delete']);
+            });
         });
     });
 });
