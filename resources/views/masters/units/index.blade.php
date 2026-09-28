@@ -10,7 +10,8 @@
                             <h5 class="card-title fw-semibold mb-1">Data Unit</h5>
                             <p class="card-subtitle mb-0">Kelola data satuan produk</p>
                         </div>
-                        <button type="button" class="btn btn-primary d-flex align-items-center gap-2 flex-shrink-0" id="btnAddUnit">
+                        <button type="button" class="btn btn-primary d-flex align-items-center gap-2 flex-shrink-0"
+                            id="btnAddUnit" data-bs-toggle="modal" data-bs-target="#unitModal">
                             <i class="ti ti-plus"></i>
                             <span>Tambah Unit</span>
                         </button>
@@ -54,7 +55,8 @@
 
                     <div class="mb-3">
                         <label for="unit_name" class="form-label">Nama Unit <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="unit_name" maxlength="100" placeholder="Contoh: Pieces">
+                        <input type="text" class="form-control" id="unit_name" maxlength="100"
+                            placeholder="Contoh: Pieces">
                     </div>
 
                     <div class="mb-0">
@@ -80,42 +82,61 @@
             </div>
         </div>
     </div>
-@endsection
-
-@push('scripts')
     <script>
-        let unitTable;
+        $(document).ready(function() {
+            frontTable()
+        })
 
-        $(function () {
-            unitTable = $('#unitTable').DataTable({
+        function frontTable() {
+            if ($.fn.DataTable.isDataTable('#unitTable')) {
+                $('#unitTable').DataTable().destroy();
+            }
+            $('#unitTable').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: "{{ url('datamaster/masterproducts/unit/front_table') }}",
-                columns: [
-                    { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-                    { data: 'unit_code', name: 'unit_code' },
-                    { data: 'unit_name', name: 'unit_name' },
-                    { data: 'description', name: 'description', defaultContent: '-' },
+                ajax: "{{ url('masters/products/unit/front_table') }}",
+                columns: [{
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'unit_code',
+                        name: 'unit_code'
+                    },
+                    {
+                        data: 'unit_name',
+                        name: 'unit_name'
+                    },
+                    {
+                        data: 'description',
+                        name: 'description',
+                        defaultContent: '-'
+                    },
                     {
                         data: 'status',
                         name: 'status',
-                        render: function (data) {
-                            return data === 'active'
-                                ? '<span class="badge bg-success-subtle text-success">Aktif</span>'
-                                : '<span class="badge bg-danger-subtle text-danger">Tidak Aktif</span>';
+                        render: function(data) {
+                            return data === 'active' ?
+                                '<span class="badge bg-success-subtle text-success">Aktif</span>' :
+                                '<span class="badge bg-danger-subtle text-danger">Tidak Aktif</span>';
                         }
                     },
-                    { data: 'action', name: 'action', orderable: false, searchable: false, className: 'text-end' }
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-end'
+                    }
                 ]
             });
-
-            $('#btnAddUnit').on('click', function () {
-                clearUnitForm();
-                $('#unitModalLabel').text('Tambah Unit');
-                bootstrap.Modal.getOrCreateInstance(document.getElementById('unitModal')).show();
-            });
-
-            $('#btnSaveUnit').on('click', saveUnit);
+        }
+        $('#btnAddUnit').on('click', function() {
+            clearUnitForm();
+            $('#unitModalLabel').text('Tambah Unit');
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('unitModal')).show();
         });
 
         function clearUnitForm() {
@@ -129,7 +150,7 @@
             $('.is-invalid').removeClass('is-invalid');
             $('.invalid-feedback').remove();
 
-            $.each(errors, function (field, messages) {
+            $.each(errors, function(field, messages) {
                 const input = $('#' + field);
                 input.addClass('is-invalid');
                 input.after('<div class="invalid-feedback">' + messages[0] + '</div>');
@@ -146,7 +167,8 @@
             button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...');
 
             $.ajax({
-                url: id ? "{{ url('datamaster/masterproducts/unit/update') }}/" + id : "{{ url('datamaster/masterproducts/unit/store') }}",
+                url: id ? "{{ url('masters/products/unit/update') }}/" + id :
+                    "{{ url('masters/products/unit/store') }}",
                 type: id ? 'PUT' : 'POST',
                 data: {
                     _token: "{{ csrf_token() }}",
@@ -155,31 +177,45 @@
                     description: $('#description').val(),
                     status: $('#status').val()
                 },
-                success: function (response) {
+                success: function(response) {
                     if (!response.status) {
                         return;
                     }
 
                     bootstrap.Modal.getOrCreateInstance(document.getElementById('unitModal')).hide();
                     unitTable.ajax.reload(null, false);
-                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: response.message, showConfirmButton: false, timer: 2500 });
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: response.message,
+                        showConfirmButton: false,
+                        timer: 2500
+                    });
                 },
-                error: function (xhr) {
+                error: function(xhr) {
                     if (xhr.status === 422 && xhr.responseJSON?.errors) {
                         showUnitErrors(xhr.responseJSON.errors);
                         return;
                     }
 
-                    Swal.fire({ toast: true, position: 'top-end', icon: 'error', title: xhr.responseJSON?.message || 'Unit gagal disimpan.', showConfirmButton: false, timer: 3000 });
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'error',
+                        title: xhr.responseJSON?.message || 'Unit gagal disimpan.',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
                 },
-                complete: function () {
+                complete: function() {
                     button.prop('disabled', false).html(originalButton);
                 }
             });
         }
 
         function editUnit(id) {
-            $.get("{{ url('datamaster/masterproducts/unit/edit') }}/" + id, function (response) {
+            $.get("{{ url('masters/products/unit/edit') }}/" + id, function(response) {
                 if (!response.status) {
                     return;
                 }
@@ -192,8 +228,15 @@
                 $('#status').val(response.data.status);
                 $('#unitModalLabel').text('Edit Unit');
                 bootstrap.Modal.getOrCreateInstance(document.getElementById('unitModal')).show();
-            }).fail(function (xhr) {
-                Swal.fire({ toast: true, position: 'top-end', icon: 'error', title: xhr.responseJSON?.message || 'Data unit gagal diambil.', showConfirmButton: false, timer: 3000 });
+            }).fail(function(xhr) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'error',
+                    title: xhr.responseJSON?.message || 'Data unit gagal diambil.',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
             });
         }
 
@@ -205,24 +248,40 @@
                 showCancelButton: true,
                 confirmButtonText: 'Ya, hapus',
                 cancelButtonText: 'Batal'
-            }).then(function (result) {
+            }).then(function(result) {
                 if (!result.isConfirmed) {
                     return;
                 }
 
                 $.ajax({
-                    url: "{{ url('datamaster/masterproducts/unit/destroy') }}/" + id,
+                    url: "{{ url('masters/products/unit/destroy') }}/" + id,
                     type: 'DELETE',
-                    data: { _token: "{{ csrf_token() }}" },
-                    success: function (response) {
-                        unitTable.ajax.reload(null, false);
-                        Swal.fire({ toast: true, position: 'top-end', icon: response.status ? 'success' : 'error', title: response.message, showConfirmButton: false, timer: 3000 });
+                    data: {
+                        _token: "{{ csrf_token() }}"
                     },
-                    error: function (xhr) {
-                        Swal.fire({ toast: true, position: 'top-end', icon: 'error', title: xhr.responseJSON?.message || 'Unit gagal dihapus.', showConfirmButton: false, timer: 3000 });
+                    success: function(response) {
+                        unitTable.ajax.reload(null, false);
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: response.status ? 'success' : 'error',
+                            title: response.message,
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'error',
+                            title: xhr.responseJSON?.message || 'Unit gagal dihapus.',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
                     }
                 });
             });
         }
     </script>
-@endpush
+@endsection

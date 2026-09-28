@@ -1,5 +1,4 @@
 @extends('layouts.main')
-
 @section('content')
     <div class="row">
         <div class="col-12 d-flex align-items-stretch">
@@ -10,7 +9,8 @@
                             <h5 class="card-title fw-semibold mb-1">Data Type</h5>
                             <p class="card-subtitle mb-0">Kelola tipe produk</p>
                         </div>
-                        <button type="button" class="btn btn-primary d-flex align-items-center gap-2 flex-shrink-0" id="btnAddType">
+                        <button type="button" class="btn btn-primary d-flex align-items-center gap-2 flex-shrink-0"
+                            data-bs-toggle="modal" data-bs-target="#typeModal" id="btnAddType">
                             <i class="ti ti-plus"></i>
                             <span>Tambah Type</span>
                         </button>
@@ -55,7 +55,8 @@
 
                     <div class="mb-3">
                         <label for="type_name" class="form-label">Nama Type <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="type_name" maxlength="100" placeholder="Contoh: Frame">
+                        <input type="text" class="form-control" id="type_name" maxlength="100"
+                            placeholder="Contoh: Frame">
                     </div>
 
                     <div class="mb-3">
@@ -91,43 +92,66 @@
             </div>
         </div>
     </div>
-@endsection
-
-@push('scripts')
     <script>
-        let typeTable;
+        $(document).ready(function() {
+            frontTable()
+        })
 
-        $(function () {
-            typeTable = $('#typeTable').DataTable({
+        function frontTable() {
+            if ($.fn.DataTable.isDataTable('#typeTable')) {
+                $('#typeTable').DataTable().destroy();
+            }
+            $('#typeTable').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: "{{ url('datamaster/masterproducts/type/front_table') }}",
-                columns: [
-                    { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-                    { data: 'type_code', name: 'type_code' },
-                    { data: 'type_name', name: 'type_name' },
-                    { data: 'category_name', name: 'category_name', defaultContent: '-' },
-                    { data: 'description', name: 'description', defaultContent: '-' },
+                ajax: "{{ url('masters/products/type/front_table') }}",
+                columns: [{
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'type_code',
+                        name: 'type_code'
+                    },
+                    {
+                        data: 'type_name',
+                        name: 'type_name'
+                    },
+                    {
+                        data: 'category_name',
+                        name: 'category_name',
+                        defaultContent: '-'
+                    },
+                    {
+                        data: 'description',
+                        name: 'description',
+                        defaultContent: '-'
+                    },
                     {
                         data: 'status',
                         name: 'status',
-                        render: function (data) {
-                            return data === 'active'
-                                ? '<span class="badge bg-success-subtle text-success">Aktif</span>'
-                                : '<span class="badge bg-danger-subtle text-danger">Tidak Aktif</span>';
+                        render: function(data) {
+                            return data === 'active' ?
+                                '<span class="badge bg-success-subtle text-success">Aktif</span>' :
+                                '<span class="badge bg-danger-subtle text-danger">Tidak Aktif</span>';
                         }
                     },
-                    { data: 'action', name: 'action', orderable: false, searchable: false, className: 'text-end' }
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-end'
+                    }
                 ]
             });
-
-            $('#btnAddType').on('click', function () {
-                clearTypeForm();
-                $('#typeModalLabel').text('Tambah Type');
-                bootstrap.Modal.getOrCreateInstance(document.getElementById('typeModal')).show();
-            });
-
-            $('#btnSaveType').on('click', saveType);
+        }
+        $('#btnAddType').on('click', function() {
+            clearTypeForm();
+            $('#typeModalLabel').text('Tambah Type');
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('typeModal')).show();
         });
 
         function clearTypeForm() {
@@ -142,7 +166,7 @@
             $('.is-invalid').removeClass('is-invalid');
             $('.invalid-feedback').remove();
 
-            $.each(errors, function (field, messages) {
+            $.each(errors, function(field, messages) {
                 const input = $('#' + field);
                 input.addClass('is-invalid');
                 input.after('<div class="invalid-feedback">' + messages[0] + '</div>');
@@ -159,7 +183,7 @@
             button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...');
 
             $.ajax({
-                url: id ? "{{ url('datamaster/masterproducts/type/update') }}" : "{{ url('datamaster/masterproducts/type/store') }}",
+                url: id ? "{{ url('masters/products/type/update') }}" : "{{ url('masters/products/type/store') }}",
                 type: 'POST',
                 data: {
                     _token: "{{ csrf_token() }}",
@@ -170,24 +194,38 @@
                     description: $('#description').val(),
                     status: $('#status').val()
                 },
-                success: function (response) {
+                success: function(response) {
                     if (!response.status) {
                         return;
                     }
 
                     bootstrap.Modal.getOrCreateInstance(document.getElementById('typeModal')).hide();
                     typeTable.ajax.reload(null, false);
-                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: response.message, showConfirmButton: false, timer: 2500 });
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: response.message,
+                        showConfirmButton: false,
+                        timer: 2500
+                    });
                 },
-                error: function (xhr) {
+                error: function(xhr) {
                     if (xhr.status === 422 && xhr.responseJSON?.errors) {
                         showTypeErrors(xhr.responseJSON.errors);
                         return;
                     }
 
-                    Swal.fire({ toast: true, position: 'top-end', icon: 'error', title: xhr.responseJSON?.message || 'Type gagal disimpan.', showConfirmButton: false, timer: 3000 });
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'error',
+                        title: xhr.responseJSON?.message || 'Type gagal disimpan.',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
                 },
-                complete: function () {
+                complete: function() {
                     button.prop('disabled', false).html(originalText);
                 }
             });
@@ -195,13 +233,13 @@
 
         function editType(id) {
             $.ajax({
-                url: "{{ url('datamaster/masterproducts/type/show') }}",
+                url: "{{ url('masters/produtcts/type/show') }}",
                 type: 'POST',
                 data: {
                     _token: "{{ csrf_token() }}",
                     id: id
                 },
-                success: function (response) {
+                success: function(response) {
                     if (!response.status) {
                         return;
                     }
@@ -216,8 +254,15 @@
                     $('#typeModalLabel').text('Edit Type');
                     bootstrap.Modal.getOrCreateInstance(document.getElementById('typeModal')).show();
                 },
-                error: function (xhr) {
-                    Swal.fire({ toast: true, position: 'top-end', icon: 'error', title: xhr.responseJSON?.message || 'Data type gagal diambil.', showConfirmButton: false, timer: 3000 });
+                error: function(xhr) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'error',
+                        title: xhr.responseJSON?.message || 'Data type gagal diambil.',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
                 }
             });
         }
@@ -230,27 +275,41 @@
                 showCancelButton: true,
                 confirmButtonText: 'Ya, hapus',
                 cancelButtonText: 'Batal'
-            }).then(function (result) {
+            }).then(function(result) {
                 if (!result.isConfirmed) {
                     return;
                 }
 
                 $.ajax({
-                    url: "{{ url('datamaster/masterproducts/type/delete') }}",
+                    url: "{{ url('masters/products/type/delete') }}",
                     type: 'POST',
                     data: {
                         _token: "{{ csrf_token() }}",
                         id: id
                     },
-                    success: function (response) {
+                    success: function(response) {
                         typeTable.ajax.reload(null, false);
-                        Swal.fire({ toast: true, position: 'top-end', icon: response.status ? 'success' : 'error', title: response.message, showConfirmButton: false, timer: 3000 });
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: response.status ? 'success' : 'error',
+                            title: response.message,
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
                     },
-                    error: function (xhr) {
-                        Swal.fire({ toast: true, position: 'top-end', icon: 'error', title: xhr.responseJSON?.message || 'Type gagal dihapus.', showConfirmButton: false, timer: 3000 });
+                    error: function(xhr) {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'error',
+                            title: xhr.responseJSON?.message || 'Type gagal dihapus.',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
                     }
                 });
             });
         }
     </script>
-@endpush
+@endsection
